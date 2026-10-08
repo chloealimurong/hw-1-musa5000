@@ -3,12 +3,41 @@ title: "Homework 1: Using OLS Regression to Predict Median House Values in Phila
 authors: Chloe Alimurong, Sophia Meyers & Evelyn Zhong
 date: October 5, 2026
 output: rmdformats::readthedown
+editor_options: 
+  markdown: 
+    wrap: 72
 ---
 
 # Introduction
-In this analysis, we will assess the relationship between median house values in Philadelphia and variables such as # Households Living in Poverty, % with Bachelor's Degree or Higher, % Vacant Houses and % Single House Units. 
 
-The predictors in our analysis describe different aspects of housing that could potentially influence house values and prices. The number of households in poverty and with a bachelors degree, to some degree, explain the economic status of the demographic's housing market. Those living in poverty may not be able to afford houses with higher price tags and those with a bachelors degree may have an income that could afford houses with higher price tags. These population factors indirectly relate to house value, thus why we chose them to predict in our analysis. For unit-specific predictors like vacant houses and single house units, these two signal environmental factors that could influence house value. For vacant houses, we expect that the neighborhood may not be as desirable or may not have high economic activity, making it less desirable to live, which could decrease house values. The percentage of single house units may also highlight the neighborhood's population. In Philadelphia, it is rare to see single-family detached homes. The common house type are multi-family style houses. So for those living in single-family homes, it indicates the desire to live at longer terms and farther from the city center. These types of homes may single out those with higher incomes to afford a single unit house within a city, which may mean higher house value. All of these predictors indicate something about the housing market population and environment indirectly, making them good examples of variables to predict median house value within Philadelphia.
+In this analysis, we will assess the relationship between median house
+values in Philadelphia and variables such as \# Households Living in
+Poverty, % with Bachelor's Degree or Higher, % Vacant Houses and %
+Single House Units.
+
+The predictors in our analysis describe different aspects of housing
+that could potentially influence house values and prices. The number of
+households in poverty and with a bachelors degree, to some degree,
+explain the economic status of the demographic's housing market. Those
+living in poverty may not be able to afford houses with higher price
+tags and those with a bachelors degree may have an income that could
+afford houses with higher price tags. These population factors
+indirectly relate to house value, thus why we chose them to predict in
+our analysis. For unit-specific predictors like vacant houses and single
+house units, these two signal environmental factors that could influence
+house value. For vacant houses, we expect that the neighborhood may not
+be as desirable or may not have high economic activity, making it less
+desirable to live, which could decrease house values. The percentage of
+single house units may also highlight the neighborhood's population. In
+Philadelphia, it is rare to see single-family detached homes. The common
+house type are multi-family style houses. So for those living in
+single-family homes, it indicates the desire to live at longer terms and
+farther from the city center. These types of homes may single out those
+with higher incomes to afford a single unit house within a city, which
+may mean higher house value. All of these predictors indicate something
+about the housing market population and environment indirectly, making
+them good examples of variables to predict median house value within
+Philadelphia.
 
 ```{r}
 #| label: setup
@@ -33,15 +62,32 @@ library(corrplot)
 ```
 
 # Exploratory Analysis
-## Data Cleaning
-The original Philadelphia Block Group dataset had 1816 observations and was cleaned in order to achieve a dataset with 1720 observations. The following items were removed; Block groups where population < 40, Block groups where there are no housing units, Block groups where the median house value is lower than 10,000, One North Philadelphia block group which had a very high median house value (over 800,000), and a very low median household income (less than $8,000). The purpose of their removal was to remove any outliers, no data, and insufficient sample size from our analysis.
 
+## Data Cleaning
+
+The original Philadelphia Block Group dataset had 1816 observations and
+was cleaned in order to achieve a dataset with 1720 observations. The
+following items were removed; Block groups where population \< 40, Block
+groups where there are no housing units, Block groups where the median
+house value is lower than 10,000, One North Philadelphia block group
+which had a very high median house value (over 800,000), and a very low
+median household income (less than \$8,000). The purpose of their
+removal was to remove any outliers, no data, and insufficient sample
+size from our analysis.
 
 ## Methods
-In this section, we will evaluate the summary statistics and distributions of the dependent variable and predictors.
-In our exploratory data analysis, we will also examine the correlations between the predictors. A correlation is the relationship between two variables. The sample correlation coefficient r, the strength of a linear relationship between two variables (correlation strength) on a -1 to 1 scale, can be calculated with the following equation:
+
+In this section, we will evaluate the summary statistics and
+distributions of the dependent variable and predictors. In our
+exploratory data analysis, we will also examine the correlations between
+the predictors. A correlation is the relationship between two variables.
+The sample correlation coefficient r, the strength of a linear
+relationship between two variables (correlation strength) on a -1 to 1
+scale, can be calculated with the following equation:
 $$r = \frac{\sum (x_i - \bar{x})(y_i - \bar{y})}{\sqrt{\sum (x_i - \bar{x})^2 \sum (y_i - \bar{y})^2}}$$
-The possible range of r values is -1 to 1. A correlation of 0 means there is no linear relationship between the two variables.
+The possible range of r values is -1 to 1. A correlation of 0 means
+there is no linear relationship between the two variables.
+
 ```{r}
 #| label: summary statistics & examining the distribution of the dependent variable and predictors
 
@@ -77,7 +123,16 @@ for (v in vars){
 ```
 
 ## Results
-According to the summary statistics table, the average Median House Value in Philadelphia, the dependent variable, across the blocks in our sample is 66287.73 with a standard deviation of 60006.08. For the predictor variables: The average % of households with a Bachelors degree or higher is 16.08% with a standard deviation of 17.77%. The average number of households living in poverty is 189 with a standard deviation of 164. The average % Vacant Houses is 11.29% with a standard deviation of 9.63%. The average % Single House Units is 9.23% with a standard deviation of 13.25%.	
+
+According to the summary statistics table, the average Median House
+Value in Philadelphia, the dependent variable, across the blocks in our
+sample is 66287.73 with a standard deviation of 60006.08. For the
+predictor variables: The average % of households with a Bachelors degree
+or higher is 16.08% with a standard deviation of 17.77%. The average
+number of households living in poverty is 189 with a standard deviation
+of 164. The average % Vacant Houses is 11.29% with a standard deviation
+of 9.63%. The average % Single House Units is 9.23% with a standard
+deviation of 13.25%.
 
 ```{r}
 #| label: log transformations and its effect on the distribution
@@ -107,9 +162,14 @@ hist(regdata$PCTSINGLES,  main = "PCTSINGLES",  xlab = "PCTSINGLES",col = "light
 hist(regdata$LNPCTSINGLES, main = "LNPCTSINGLES", xlab = "LNPCTSINGLES",col = "lightblue",border = "darkblue")
 
 ```
-The variables are were not normal before the logarithmic transformation, they were mostly skewed right. Whereas after the logarithmic transformation, they become more normally distributed.
-In our regression, we use the log-transformed variables for the dependent variable (median house value) and the number of households below poverty predictor.
-The other regression assumptions will be examined in a separate section below (Regression Assumption Checks).
+
+The variables are were not normal before the logarithmic transformation,
+they were mostly skewed right. Whereas after the logarithmic
+transformation, they become more normally distributed. In our
+regression, we use the log-transformed variables for the dependent
+variable (median house value) and the number of households below poverty
+predictor. The other regression assumptions will be examined in a
+separate section below (Regression Assumption Checks).
 
 ```{r}
 #| label: Scatter plot for each predictor
@@ -146,7 +206,11 @@ corrplot(
   col = colorRampPalette(c("red", "white", "blue"))(200)
 )
 ```
-The correlation matrix shows that there is severe multicollinearity. Especially between Median House Value and Percent of households with bachelors degree or more, matching the conclusion from our predictor maps above.
+
+The correlation matrix shows that there is severe multicollinearity.
+Especially between Median House Value and Percent of households with
+bachelors degree or more, matching the conclusion from our predictor
+maps above.
 
 ```{r}
 #| label: Chloropleth maps of each variable using the sf (simple features) and ggplot packages
@@ -180,33 +244,71 @@ p4 <- ggplot(c_map) + geom_sf(aes(fill = PCTSINGLES))   +scale_fill_distiller(pa
 # combine into one 2x2 figure
 (p1 | p2) / (p3 | p4)
 ```
-The only maps that look similar are the dependent variable map (log of the median house value) and the percent of households with a bachelors degree or more. The rest of the maps look vastly different. The predictor we expect to be strongly associated with the dependent variable based solely on visualization is the percent of households with a bachelor's degree and more. The striking similarity of these two maps signals to us that there may be inter-correlation between these variables. We also suspect multicollinearity to be an underlying issue for this similarity.
 
-##Sophia
-# Regression Analysis
-## Methods
-### Multiple Regression Analysis
-Multiple linear regression models how a continuous dependent variable changes with several predictors at once. Our model is:
+The only maps that look similar are the dependent variable map (log of
+the median house value) and the percent of households with a bachelors
+degree or more. The rest of the maps look vastly different. The
+predictor we expect to be strongly associated with the dependent
+variable based solely on visualization is the percent of households with
+a bachelor's degree and more. The striking similarity of these two maps
+signals to us that there may be inter-correlation between these
+variables. We also suspect multicollinearity to be an underlying issue
+for this similarity.
+
+##Sophia \# Regression Analysis \## Methods \### Multiple Regression
+Analysis Multiple linear regression models how a continuous dependent
+variable changes with several predictors at once. Our model is:
 
 $$LNMEDHVAL = \beta_0 + \beta_1 PCTVACANT + \beta_2 PCTSINGLES + \beta_3 PCTBACHMOR + \beta_4 LNNBELPOV100 + \varepsilon$$
 
-where $\beta_0$ is the intercept, each $\beta_i$ is the expected change in LNMEDHVAL for a one-unit change in that predictor holding the others constant, and $\varepsilon$ is the random error. LNMEDHVAL and LNNBELPOV100 are natural-log transformed. The model assumes linearity, independent observations, normally distributed residuals, constant error variance (homoscedasticity), and no severe multicollinearity among the predictors.
+where $\beta_0$ is the intercept, each $\beta_i$ is the expected change
+in LNMEDHVAL for a one-unit change in that predictor holding the others
+constant, and $\varepsilon$ is the random error. LNMEDHVAL and
+LNNBELPOV100 are natural-log transformed. The model assumes linearity,
+independent observations, normally distributed residuals, constant error
+variance (homoscedasticity), and no severe multicollinearity among the
+predictors.
 
-The parameters to estimate are $\beta_0, \dots, \beta_4$ and the error variance $\sigma^2$, the variance of $\varepsilon$. The coefficients are estimated by least squares, which minimizes the sum of squared residuals: $\hat{\boldsymbol{\beta}} = (X^{T}X)^{-1}X^{T}y$.
+The parameters to estimate are $\beta_0, \dots, \beta_4$ and the error
+variance $\sigma^2$, the variance of $\varepsilon$. The coefficients are
+estimated by least squares, which minimizes the sum of squared
+residuals: $\hat{\boldsymbol{\beta}} = (X^{T}X)^{-1}X^{T}y$.
 
-The coefficient of multiple determination is $R^2 = SSR/SST = 1 - SSE/SST$, where SSE is the error sum of squares, SSR the regression sum of squares, and SST the total sum of squares. The adjusted $R^2 = 1 - \frac{SSE/(n-k-1)}{SST/(n-1)}$ penalizes the number of predictors $k$ ($n$ is the number of observations).
+The coefficient of multiple determination is
+$R^2 = SSR/SST = 1 - SSE/SST$, where SSE is the error sum of squares,
+SSR the regression sum of squares, and SST the total sum of squares. The
+adjusted $R^2 = 1 - \frac{SSE/(n-k-1)}{SST/(n-1)}$ penalizes the number
+of predictors $k$ ($n$ is the number of observations).
 
-We test the overall model with the F-ratio, $F = \frac{SSR/k}{SSE/(n-k-1)}$, where $H_0: \beta_1 = \dots = \beta_4 = 0$ and $H_a$: at least one $\beta_i \neq 0$. For each predictor, we test $H_0: \beta_i = 0$ against $H_a: \beta_i \neq 0$ using a t-test.
+We test the overall model with the F-ratio,
+$F = \frac{SSR/k}{SSE/(n-k-1)}$, where
+$H_0: \beta_1 = \dots = \beta_4 = 0$ and $H_a$: at least one
+$\beta_i \neq 0$. For each predictor, we test $H_0: \beta_i = 0$ against
+$H_a: \beta_i \neq 0$ using a t-test.
 
 ### Additional Analyses
-Stepwise regression adds or removes predictors one at a time, keeping changes that lower the Akaike Information Criterion (AIC = $2p - 2\ln(\hat{L})$, where $p$ is the number of parameters and $\hat{L}$ is the maximized likelihood). Its limitations are that it is greedy and may miss the best model, it can overfit, its p-values are overly optimistic, and it ignores theory.
 
-K-fold cross-validation (k = 5) tests how well a model predicts data it was not fit to. The data are split into five folds. Each fold is held out in turn while the model is fit to the other four, and the model then predicts the held-out fold. Models are compared using the root mean square error, $RMSE = \sqrt{\frac{1}{n}\sum (y_i - \hat{y}_i)^2}$, where $\hat{y}_i$ is the cross-validated prediction. A smaller RMSE means better prediction.
+Stepwise regression adds or removes predictors one at a time, keeping
+changes that lower the Akaike Information Criterion (AIC =
+$2p - 2\ln(\hat{L})$, where $p$ is the number of parameters and
+$\hat{L}$ is the maximized likelihood). Its limitations are that it is
+greedy and may miss the best model, it can overfit, its p-values are
+overly optimistic, and it ignores theory.
+
+K-fold cross-validation (k = 5) tests how well a model predicts data it
+was not fit to. The data are split into five folds. Each fold is held
+out in turn while the model is fit to the other four, and the model then
+predicts the held-out fold. Models are compared using the root mean
+square error, $RMSE = \sqrt{\frac{1}{n}\sum (y_i - \hat{y}_i)^2}$, where
+$\hat{y}_i$ is the cross-validated prediction. A smaller RMSE means
+better prediction.
 
 ### Software
+
 All analyses were performed in R.
 
 ## Results
+
 ```{r}
 #| label: Using Stepwise regression to determine the best model based on the Akaike Information Criterion
 
@@ -219,18 +321,41 @@ summary(model_full)
 
 anova(model_full)
 ```
+
 ### Regression Results
-All four predictors are statistically significant (p < 0.0001). Because the dependent variable is logged, coefficients are approximate percentage changes in median house value, holding the other predictors constant:
 
-PCTVACANT ($\hat{\beta}_1$ = -0.0192): each additional percentage point of vacant housing is associated with about a 1.90% decrease in median house value.
-PCTSINGLES ($\hat{\beta}_2$ = 0.0030): each additional percentage point of single-family homes is associated with about a 0.30% increase.
-PCTBACHMOR ($\hat{\beta}_3$ = 0.0209): each additional percentage point of residents with a bachelor's degree or higher is associated with about a 2.11% increase.
-LNBELPOV100 ($\hat{\beta}_4$ = -0.0789): a 1% increase in the number of households in poverty is associated with about a 0.078% decrease.
+All four predictors are statistically significant (p \< 0.0001). Because
+the dependent variable is logged, coefficients are approximate
+percentage changes in median house value, holding the other predictors
+constant:
 
-For each predictor, the p-value is the probability of an estimate this large if the true coefficient were zero, so we reject $H_0: \beta_i = 0$ for all four. The model explains about 66% of the variance in LNMEDHVAL ($R^2$ = 0.6623, adjusted $R^2$ = 0.6615). The F-ratio is 840.9 on 4 and 1715 degrees of freedom (p < 0.0001), so we reject the null that all coefficients are zero.
+PCTVACANT ($\hat{\beta}_1$ = -0.0192): each additional percentage point
+of vacant housing is associated with about a 1.90% decrease in median
+house value. PCTSINGLES ($\hat{\beta}_2$ = 0.0030): each additional
+percentage point of single-family homes is associated with about a 0.30%
+increase. PCTBACHMOR ($\hat{\beta}_3$ = 0.0209): each additional
+percentage point of residents with a bachelor's degree or higher is
+associated with about a 2.11% increase. LNBELPOV100 ($\hat{\beta}_4$ =
+-0.0789): a 1% increase in the number of households in poverty is
+associated with about a 0.078% decrease.
+
+For each predictor, the p-value is the probability of an estimate this
+large if the true coefficient were zero, so we reject $H_0: \beta_i = 0$
+for all four. The model explains about 66% of the variance in LNMEDHVAL
+($R^2$ = 0.6623, adjusted $R^2$ = 0.6615). The F-ratio is 840.9 on 4 and
+1715 degrees of freedom (p \< 0.0001), so we reject the null that all
+coefficients are zero.
 
 ### Regression Assumption Checks
-We examined the variable distributions earlier. The scatter plots of LNMEDHVAL against each predictor do not look cleanly linear, since PCTVACANT, PCTSINGLES and PCTBACHMOR all have clusters at or near zero and PCTSINGLES is only weakly related to LNMEDHVAL. Standardized residuals are residuals divided by their estimated standard deviation, so values beyond $\pm 2$ are unusual and beyond $\pm 3$ are potential outliers. The histogram of the standardized residuals is shown in the Standardized Regression Residuals section.
+
+We examined the variable distributions earlier. The scatter plots of
+LNMEDHVAL against each predictor do not look cleanly linear, since
+PCTVACANT, PCTSINGLES and PCTBACHMOR all have clusters at or near zero
+and PCTSINGLES is only weakly related to LNMEDHVAL. Standardized
+residuals are residuals divided by their estimated standard deviation,
+so values beyond $\pm 2$ are unusual and beyond $\pm 3$ are potential
+outliers. The histogram of the standardized residuals is shown in the
+Standardized Regression Residuals section.
 
 ```{r}
 resid_df <- data.frame(
@@ -246,31 +371,50 @@ ggplot(resid_df, aes(x = predicted, y = stdres)) +
   labs(title = "Standardized Residuals by Predicted Value",
        x = "Predicted LNMEDHVAL", y = "Standardized residual")
 ```
+
 ```{r}
 n_out2 <- sum(abs(resid_df$stdres) > 2)
 n_out3 <- sum(abs(resid_df$stdres) > 3)
 n_out2
 n_out3
 ```
-In the plot of standardized residuals against predicted values, 85 block groups (about 4.9%) fall beyond $\pm 2$ and 20 fall beyond $\pm 3$, so there are some outliers. The spread is mostly even but is somewhat wider at the lowest and highest predicted values, which suggests mild heteroscedasticity. Together with the non-linear scatter plots, linearity and homoscedasticity are not fully satisfied.
 
-The maps of the dependent variable and predictors show similar values clustering in space, which suggests spatial autocorrelation and that block groups are not fully independent. The map of the standardized residuals (in the next section) shows whether the residuals are also spatially clustered. We will test spatial autocorrelation formally in the next assignment.
+In the plot of standardized residuals against predicted values, 85 block
+groups (about 4.9%) fall beyond $\pm 2$ and 20 fall beyond $\pm 3$, so
+there are some outliers. The spread is mostly even but is somewhat wider
+at the lowest and highest predicted values, which suggests mild
+heteroscedasticity. Together with the non-linear scatter plots,
+linearity and homoscedasticity are not fully satisfied.
+
+The maps of the dependent variable and predictors show similar values
+clustering in space, which suggests spatial autocorrelation and that
+block groups are not fully independent. The map of the standardized
+residuals (in the next section) shows whether the residuals are also
+spatially clustered. We will test spatial autocorrelation formally in
+the next assignment.
 
 ### Additional Models
+
 #### Stepwise Regression
+
 ```{r}
 step_model <- step(model_full, direction = "both")
 step_model$anova
 formula(step_model)
 ```
+
 ```{r}
 kept_all <- length(coef(step_model)) == length(coef(model_full))
 ```
-Stepwise regression starting from the full model (AIC = -3448.1) did not drop any predictor, because removing any of them would raise the AIC. All four predictors are therefore kept in the final model.
+
+Stepwise regression starting from the full model (AIC = -3448.1) did not
+drop any predictor, because removing any of them would raise the AIC.
+All four predictors are therefore kept in the final model.
 
 #K-fold Cross Validation
 
 ##Sophia
+
 ```{r}
 #| label: calculating RMSE and re-running the model with two 
 
@@ -310,17 +454,21 @@ rmse_results <- data.frame(
 )
 knitr::kable(rmse_results)
 ```
-The four-predictor model has a cross-validated RMSE of 0.3682, compared with 0.4435 for the model with only PCTVACANT and MEDHHINC. The four-predictor model has the lower RMSE, so it predicts held-out median house values better. The RMSE is in log-dollar units.
+
+The four-predictor model has a cross-validated RMSE of 0.3682, compared
+with 0.4435 for the model with only PCTVACANT and MEDHHINC. The
+four-predictor model has the lower RMSE, so it predicts held-out median
+house values better. The RMSE is in log-dollar units.
 
 # Standardized Regression Residuals
 
 ## Evelyn
+
 ```{r}
 #| label: Histogram and Chloropleth map of standardized regression residuals
 #| message: false
 #| warning: false
 
-# save fitted values, residuals, and standardized residuals from the full model
 idx <- as.numeric(names(fitted(model_full)))
 regdata$predicted <- NA
 regdata$resid     <- NA
@@ -329,7 +477,6 @@ regdata$predicted[idx] <- fitted(model_full)
 regdata$resid[idx]     <- residuals(model_full)
 regdata$stdres[idx]    <- rstandard(model_full)
 
-# histogram of standardized residuals
 ggplot(regdata, aes(x = stdres)) +
   geom_histogram(binwidth = 0.25, fill = "#8c6bb1", color = "white") +
   geom_vline(xintercept = 0, linetype = "dashed") +
@@ -337,17 +484,14 @@ ggplot(regdata, aes(x = stdres)) +
   labs(title = "Histogram of Standardized Residuals",
        x = "Standardized residual", y = "Number of block groups")
 
-# numbers to cite
 summary(regdata$stdres)
 sum(abs(regdata$stdres) > 2, na.rm = TRUE)  # block groups beyond +/-2
 sum(abs(regdata$stdres) > 3, na.rm = TRUE)  # block groups beyond +/-3
 
-# join residuals to the shapefile by POLY_ID
 c_map <- c_map %>%
   mutate(POLY_ID = as.numeric(POLY_ID)) %>%
   left_join(regdata %>% dplyr::select(POLY_ID, stdres), by = "POLY_ID")
 
-# choropleth of standardized residuals, same palette as the other maps
 ggplot(c_map) +
   geom_sf(aes(fill = stdres)) +
   scale_fill_distiller(palette = "BuPu", direction = 1,
@@ -356,8 +500,22 @@ ggplot(c_map) +
   labs(title = "Standardized Regression Residuals", fill = "Std. residual")
 ```
 
-```
+The histogram of standardized residuals is roughly symmetric and centered at zero (mean = 0.0001, median = 0.10), so the normality assumption is reasonably met for most block groups. However, the histogram has a taller, narrower peak than a normal curve and longer tails. The share of block groups beyond ±2 (4.9%) is close to the roughly 5% expected under normality, but the share beyond ±3 (1.2%) is about four times the expected 0.3%, with the most extreme values at −6.18 and 6.13. On the map, values beyond ±3 are shown at the ends of the color scale.
+
+The map of standardized residuals shows that prediction errors are not randomly spread across the city. Block groups with large positive residuals, where the model underpredicts log median house value, are concentrated in the northwest and in parts of North Philadelphia. Block groups with negative residuals, where the model overpredicts, appear in parts of southwest and South Philadelphia. Neighboring block groups tend to have residuals of similar sign and size. Like the variable maps, this suggests spatial autocorrelation and that the observations are not independent. 
+
+\`\`\`
 
 # Discussions and Limitations
 
-## Evelyn
+In this report, our team used OLS regression to examine how median house value in 1,720 Philadelphia block groups relates to vacancy, single-family housing, educational attainment and poverty. All four predictors were statistically significant. Vacancy and poverty were associated with lower house values, and educational attainment and single-family housing with higher ones. Of note was how unevenly the predictors contributed. The percentage of residents with a bachelor’s degree was by far the strongest predictor, while the percentage of single-family homes, though significant, added the least. The weaker role of PCTSINGLES may reflect how few detached single-family homes there are in a city made up mostly of rowhouses.
+
+Overall, the model performs reasonably well and explains about two-thirds of the variance in log median house value (R² = 0.6623). The F-test shows that the predictors together are significantly related to it. Stepwise regression kept all four predictors, which suggests each one provided useful information. However, stepwise regression only chooses among the variables it is given, so it cannot tell us what the model may be missing. Cross-validation showed that the four-predictor model predicts new data better than the two-predictor model (RMSE of 0.3682 vs. 0.4435), and its cross-validated RMSE is close to its residual standard error (0.3665). This suggests the model is not overfitting. Still, about a third of the variance is unexplained. Variables of what affects house values that we did not include but would like to examine include: age, size and condition of the housing; distance to downtown area and to transit; school quality; crime rates; access to greenspaces and bluespaces; and the effects of historical redlining.
+
+As discussed in the Regression Assumption Checks, the model violates several OLS assumptions. Relationships between the predictors and log median house value are not fully linear, and the residuals show mild heteroscedasticity. The residuals are close to normal but have more extreme values than a normal distribution would produce, pointing to a small number of block groups the model fits poorly. More critically, the maps of the variables and of the residuals show that neighboring block groups have similar values, so the observations are likely not independent. When residuals are spatially autocorrelated, OLS tends to underestimate the standard errors, which makes the p-values too small and raises the chance of finding a relationship that is not there. If house values in one block group directly affect values in nearby block groups, the coefficient estimates may also be biased.
+
+Another limitation is that NBELPOV100 (Households below Poverty Levels) is a raw count rather than a percentage. Because it is not divided by the total number of households, it partly measures block group size instead of poverty. For example, a block group with 1,500 households and 150 in poverty (10%) and one with 300 households and 150 in poverty (50%) get the same value. As a result, the coefficient mixes the effect of poverty with the effect of population size. Percentage of households in poverty may be a better measure.
+
+Lastly, ridge and LASSO regression would not add much to this analysis. Both methods add a penalty that shrinks coefficients toward zero, accepting a small amount of bias in exchange for more stable estimates. Ridge regression is mainly used when predictors are highly correlated with each other. LASSO can shrink some coefficients all the way to zero, removing those predictors, and is most useful when there are many possible predictors to choose from. However, this model has only four predictors and 1,720 observations, the predictors are not strongly correlated with each other, and stepwise regression kept all four. Shrinking the coefficients would also make them harder to interpret. 
+
+Taken together, our results suggest that neighborhood education levels, vacancy and poverty are closely tied to house values across Philadelphia, with educational attainment showing the strongest association. The model is useful for describing these relationships, but its weakness is in that block groups near each other share similar house values and similar prediction errors, which OLS does not account for.
