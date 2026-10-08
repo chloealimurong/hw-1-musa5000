@@ -182,99 +182,135 @@ p4 <- ggplot(c_map) + geom_sf(aes(fill = PCTSINGLES))   +scale_fill_distiller(pa
 ```
 The only maps that look similar are the dependent variable map (log of the median house value) and the percent of households with a bachelors degree or more. The rest of the maps look vastly different. The predictor we expect to be strongly associated with the dependent variable based solely on visualization is the percent of households with a bachelor's degree and more. The striking similarity of these two maps signals to us that there may be inter-correlation between these variables. We also suspect multicollinearity to be an underlying issue for this similarity.
 
-# Stepwise Regression
-
 ##Sophia
+# Regression Analysis
+## Methods
+### Multiple Regression Analysis
+Multiple linear regression models how a continuous dependent variable changes with several predictors at once. Our model is:
 
-###include regression assumption checks
+$$LNMEDHVAL = \beta_0 + \beta_1 PCTVACANT + \beta_2 PCTSINGLES + \beta_3 PCTBACHMOR + \beta_4 LNNBELPOV100 + \varepsilon$$
+
+where $\beta_0$ is the intercept, each $\beta_i$ is the expected change in LNMEDHVAL for a one-unit change in that predictor holding the others constant, and $\varepsilon$ is the random error. LNMEDHVAL and LNNBELPOV100 are natural-log transformed. The model assumes linearity, independent observations, normally distributed residuals, constant error variance (homoscedasticity), and no severe multicollinearity among the predictors.
+
+The parameters to estimate are $\beta_0, \dots, \beta_4$ and the error variance $\sigma^2$, the variance of $\varepsilon$. The coefficients are estimated by least squares, which minimizes the sum of squared residuals: $\hat{\boldsymbol{\beta}} = (X^{T}X)^{-1}X^{T}y$.
+
+The coefficient of multiple determination is $R^2 = SSR/SST = 1 - SSE/SST$, where SSE is the error sum of squares, SSR the regression sum of squares, and SST the total sum of squares. The adjusted $R^2 = 1 - \frac{SSE/(n-k-1)}{SST/(n-1)}$ penalizes the number of predictors $k$ ($n$ is the number of observations).
+
+We test the overall model with the F-ratio, $F = \frac{SSR/k}{SSE/(n-k-1)}$, where $H_0: \beta_1 = \dots = \beta_4 = 0$ and $H_a$: at least one $\beta_i \neq 0$. For each predictor, we test $H_0: \beta_i = 0$ against $H_a: \beta_i \neq 0$ using a t-test.
+
+### Additional Analyses
+Stepwise regression adds or removes predictors one at a time, keeping changes that lower the Akaike Information Criterion (AIC = $2p - 2\ln(\hat{L})$, where $p$ is the number of parameters and $\hat{L}$ is the maximized likelihood). Its limitations are that it is greedy and may miss the best model, it can overfit, its p-values are overly optimistic, and it ignores theory.
+
+K-fold cross-validation (k = 5) tests how well a model predicts data it was not fit to. The data are split into five folds. Each fold is held out in turn while the model is fit to the other four, and the model then predicts the held-out fold. Models are compared using the root mean square error, $RMSE = \sqrt{\frac{1}{n}\sum (y_i - \hat{y}_i)^2}$, where $\hat{y}_i$ is the cross-validated prediction. A smaller RMSE means better prediction.
+
+### Software
+All analyses were performed in R.
+
+## Results
 ```{r}
 #| label: Using Stepwise regression to determine the best model based on the Akaike Information Criterion
 
-# Full OLS model with all four predictors
 model_full <- lm(
   LNMEDHVAL ~ PCTVACANT + PCTSINGLES + PCTBACHMOR + LNBELPOV100,
   data = regdata
 )
 
 summary(model_full)
-```
-```{r}
-# Stepwise regression using AIC
-step_model <- step(model_full)
 
-step_model
+anova(model_full)
+```
+### Regression Results
+All four predictors are statistically significant (p < 0.0001). Because the dependent variable is logged, coefficients are approximate percentage changes in median house value, holding the other predictors constant:
+
+PCTVACANT ($\hat{\beta}_1$ = -0.0192): each additional percentage point of vacant housing is associated with about a 1.90% decrease in median house value.
+PCTSINGLES ($\hat{\beta}_2$ = 0.0030): each additional percentage point of single-family homes is associated with about a 0.30% increase.
+PCTBACHMOR ($\hat{\beta}_3$ = 0.0209): each additional percentage point of residents with a bachelor's degree or higher is associated with about a 2.11% increase.
+LNBELPOV100 ($\hat{\beta}_4$ = -0.0789): a 1% increase in the number of households in poverty is associated with about a 0.078% decrease.
+
+For each predictor, the p-value is the probability of an estimate this large if the true coefficient were zero, so we reject $H_0: \beta_i = 0$ for all four. The model explains about 66% of the variance in LNMEDHVAL ($R^2$ = 0.6623, adjusted $R^2$ = 0.6615). The F-ratio is 840.9 on 4 and 1715 degrees of freedom (p < 0.0001), so we reject the null that all coefficients are zero.
+
+### Regression Assumption Checks
+We examined the variable distributions earlier. The scatter plots of LNMEDHVAL against each predictor do not look cleanly linear, since PCTVACANT, PCTSINGLES and PCTBACHMOR all have clusters at or near zero and PCTSINGLES is only weakly related to LNMEDHVAL. Standardized residuals are residuals divided by their estimated standard deviation, so values beyond $\pm 2$ are unusual and beyond $\pm 3$ are potential outliers. The histogram of the standardized residuals is shown in the Standardized Regression Residuals section.
+
+```{r}
+resid_df <- data.frame(
+  predicted = fitted(model_full),
+  stdres    = rstandard(model_full)
+)
+
+ggplot(resid_df, aes(x = predicted, y = stdres)) +
+  geom_point(alpha = 0.4) +
+  geom_hline(yintercept = 0, color = "purple", linewidth = 1) +
+  geom_hline(yintercept = c(-2, 2), linetype = "dashed") +
+  theme_minimal() +
+  labs(title = "Standardized Residuals by Predicted Value",
+       x = "Predicted LNMEDHVAL", y = "Standardized residual")
 ```
 ```{r}
-# View the sequence of models considered
+n_out2 <- sum(abs(resid_df$stdres) > 2)
+n_out3 <- sum(abs(resid_df$stdres) > 3)
+n_out2
+n_out3
+```
+In the plot of standardized residuals against predicted values, 85 block groups (about 4.9%) fall beyond $\pm 2$ and 20 fall beyond $\pm 3$, so there are some outliers. The spread is mostly even but is somewhat wider at the lowest and highest predicted values, which suggests mild heteroscedasticity. Together with the non-linear scatter plots, linearity and homoscedasticity are not fully satisfied.
+
+The maps of the dependent variable and predictors show similar values clustering in space, which suggests spatial autocorrelation and that block groups are not fully independent. The map of the standardized residuals (in the next section) shows whether the residuals are also spatially clustered. We will test spatial autocorrelation formally in the next assignment.
+
+### Additional Models
+#### Stepwise Regression
+```{r}
+step_model <- step(model_full, direction = "both")
 step_model$anova
-```
-```{r}
-# Show the final model selected by stepwise regression
 formula(step_model)
 ```
+```{r}
+kept_all <- length(coef(step_model)) == length(coef(model_full))
+```
+Stepwise regression starting from the full model (AIC = -3448.1) did not drop any predictor, because removing any of them would raise the AIC. All four predictors are therefore kept in the final model.
 
 #K-fold Cross Validation
 
 ##Sophia
 ```{r}
-#| label: calculating RMSE and re-running the model with two predictors; PCTVACANT and MEDHHINC 
+#| label: calculating RMSE and re-running the model with two 
 
-# 5-fold cross-validation for the full four-predictor model
+cv_data <- regdata %>%
+  dplyr::select(LNMEDHVAL, PCTVACANT, PCTSINGLES, PCTBACHMOR, LNBELPOV100, MEDHHINC) %>%
+  na.omit()
+
+nrow(cv_data) 
+
 cv_full <- CVlm(
-  data = regdata,
-  form.lm = model_full,
-  m = 5,
-  plotit = FALSE
+  data    = cv_data,
+  form.lm = formula(LNMEDHVAL ~ PCTVACANT + PCTSINGLES + PCTBACHMOR + LNBELPOV100),
+  m       = 5,
+  seed    = 500,
+  plotit  = FALSE,
+  printit = FALSE
 )
-```
 
-```{r}
-names(cv_full)
-str(cv_full)
-```
-
-```{r}
-# Calculate RMSE for the full model
-rmse_full <- sqrt(
-  mean((cv_full$LNMEDHVAL - cv_full$cvpred)^2, na.rm = TRUE)
-)
-rmse_full
-```
-```{r}
-# Model with PCTVACANT and MEDHHINC
-model_two <- lm(
-  LNMEDHVAL ~ PCTVACANT + MEDHHINC,
-  data = regdata
-)
+model_two <- lm(LNMEDHVAL ~ PCTVACANT + MEDHHINC, data = cv_data)
 summary(model_two)
 
-# 5-fold cross-validation
 cv_two <- CVlm(
-  data = regdata,
-  form.lm = model_two,
-  m = 5,
-  plotit = FALSE
+  data    = cv_data,
+  form.lm = formula(LNMEDHVAL ~ PCTVACANT + MEDHHINC),
+  m       = 5,
+  seed    = 500,
+  plotit  = FALSE,
+  printit = FALSE
 )
+rmse <- function(cv) sqrt(mean((cv$LNMEDHVAL - cv$cvpred)^2))
+rmse_full <- rmse(cv_full)
+rmse_two  <- rmse(cv_two)
 
-# Calculate 5-fold cross-validation RMSE
-rmse_two <- sqrt(
-  mean((cv_two$LNMEDHVAL - cv_two$cvpred)^2, na.rm = TRUE)
-)
-
-rmse_two
-```
-```{r}
 rmse_results <- data.frame(
-  Model = c(
-    "Full model: 4 predictors",
-    "Reduced model: PCTVACANT + MEDHHINC"
-  ),
-  RMSE = c(rmse_full, rmse_two)
+  Model = c("Full model: 4 predictors", "Reduced model: PCTVACANT + MEDHHINC"),
+  RMSE  = round(c(rmse_full, rmse_two), 4)
 )
-
-rmse_results
+knitr::kable(rmse_results)
 ```
-
+The four-predictor model has a cross-validated RMSE of 0.3682, compared with 0.4435 for the model with only PCTVACANT and MEDHHINC. The four-predictor model has the lower RMSE, so it predicts held-out median house values better. The RMSE is in log-dollar units.
 
 # Standardized Regression Residuals
 
