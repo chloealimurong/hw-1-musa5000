@@ -491,9 +491,9 @@ ggplot(regdata, aes(x = stdres)) +
   labs(title = "Histogram of Standardized Residuals",
        x = "Standardized residual", y = "Number of block groups")
 
-summary(regdata$stdres)
-sum(abs(regdata$stdres) > 2, na.rm = TRUE)  # block groups beyond +/-2
-sum(abs(regdata$stdres) > 3, na.rm = TRUE)  # block groups beyond +/-3
+#summary(regdata$stdres)
+#sum(abs(regdata$stdres) > 2, na.rm = TRUE)  # block groups beyond +/-2
+#sum(abs(regdata$stdres) > 3, na.rm = TRUE)  # block groups beyond +/-3
 
 c_map <- c_map %>%
   mutate(POLY_ID = as.numeric(POLY_ID)) %>%
