@@ -60,9 +60,7 @@ library(patchwork)
 library(corrplot)
 
 ```
-
-# Exploratory Analysis
-
+# Methods
 ## Data Cleaning
 
 The original Philadelphia Block Group dataset had 1816 observations and
@@ -74,8 +72,9 @@ which had a very high median house value (over 800,000), and a very low
 median household income (less than \$8,000). The purpose of their
 removal was to remove any outliers, no data, and insufficient sample
 size from our analysis.
+All analyses were performed in R.
 
-## Methods
+## Exploratory Analysis
 
 In this section, we will evaluate the summary statistics and
 distributions of the dependent variable and predictors. In our
@@ -123,7 +122,56 @@ for (v in vars){
 
 ```
 
-## Results
+
+## Regression Analysis Methods
+Analysis Multiple linear regression models how a continuous dependent
+variable changes with several predictors at once. Our model is:
+
+$$LNMEDHVAL = \beta_0 + \beta_1 PCTVACANT + \beta_2 PCTSINGLES + \beta_3 PCTBACHMOR + \beta_4 LNNBELPOV100 + \varepsilon$$
+
+where $\beta_0$ is the intercept, each $\beta_i$ is the expected change
+in LNMEDHVAL for a one-unit change in that predictor holding the others
+constant, and $\varepsilon$ is the random error. LNMEDHVAL and
+LNNBELPOV100 are natural-log transformed. The model assumes linearity,
+independent observations, normally distributed residuals, constant error
+variance (homoscedasticity), and no severe multicollinearity among the
+predictors.
+
+The parameters to estimate are $\beta_0, \dots, \beta_4$ and the error
+variance $\sigma^2$, the variance of $\varepsilon$. The coefficients are
+estimated by least squares, which minimizes the sum of squared
+residuals: $\hat{\boldsymbol{\beta}} = (X^{T}X)^{-1}X^{T}y$.
+
+The coefficient of multiple determination is
+$R^2 = SSR/SST = 1 - SSE/SST$, where SSE is the error sum of squares,
+SSR the regression sum of squares, and SST the total sum of squares. The
+adjusted $R^2 = 1 - \frac{SSE/(n-k-1)}{SST/(n-1)}$ penalizes the number
+of predictors $k$ ($n$ is the number of observations).
+
+We test the overall model with the F-ratio,
+$F = \frac{SSR/k}{SSE/(n-k-1)}$, where
+$H_0: \beta_1 = \dots = \beta_4 = 0$ and $H_a$: at least one
+$\beta_i \neq 0$. For each predictor, we test $H_0: \beta_i = 0$ against
+$H_a: \beta_i \neq 0$ using a t-test.
+
+### Additional Analyses
+
+Stepwise regression adds or removes predictors one at a time, keeping
+changes that lower the Akaike Information Criterion (AIC =
+$2p - 2\ln(\hat{L})$, where $p$ is the number of parameters and
+$\hat{L}$ is the maximized likelihood). Its limitations are that it is
+greedy and may miss the best model, it can overfit, its p-values are
+overly optimistic, and it ignores theory.
+
+K-fold cross-validation (k = 5) tests how well a model predicts data it
+was not fit to. The data are split into five folds. Each fold is held
+out in turn while the model is fit to the other four, and the model then
+predicts the held-out fold. Models are compared using the root mean
+square error, $RMSE = \sqrt{\frac{1}{n}\sum (y_i - \hat{y}_i)^2}$, where
+$\hat{y}_i$ is the cross-validated prediction. A smaller RMSE means
+better prediction.
+
+# Results
 
 According to the summary statistics table, the average Median House
 Value in Philadelphia, the dependent variable, across the blocks in our
@@ -260,59 +308,7 @@ signals to us that there may be inter-correlation between these
 variables. We also suspect multicollinearity to be an underlying issue
 for this similarity.
 
-## Regression Analysis, Methods & Multiple Regression
-Analysis Multiple linear regression models how a continuous dependent
-variable changes with several predictors at once. Our model is:
-
-$$LNMEDHVAL = \beta_0 + \beta_1 PCTVACANT + \beta_2 PCTSINGLES + \beta_3 PCTBACHMOR + \beta_4 LNNBELPOV100 + \varepsilon$$
-
-where $\beta_0$ is the intercept, each $\beta_i$ is the expected change
-in LNMEDHVAL for a one-unit change in that predictor holding the others
-constant, and $\varepsilon$ is the random error. LNMEDHVAL and
-LNNBELPOV100 are natural-log transformed. The model assumes linearity,
-independent observations, normally distributed residuals, constant error
-variance (homoscedasticity), and no severe multicollinearity among the
-predictors.
-
-The parameters to estimate are $\beta_0, \dots, \beta_4$ and the error
-variance $\sigma^2$, the variance of $\varepsilon$. The coefficients are
-estimated by least squares, which minimizes the sum of squared
-residuals: $\hat{\boldsymbol{\beta}} = (X^{T}X)^{-1}X^{T}y$.
-
-The coefficient of multiple determination is
-$R^2 = SSR/SST = 1 - SSE/SST$, where SSE is the error sum of squares,
-SSR the regression sum of squares, and SST the total sum of squares. The
-adjusted $R^2 = 1 - \frac{SSE/(n-k-1)}{SST/(n-1)}$ penalizes the number
-of predictors $k$ ($n$ is the number of observations).
-
-We test the overall model with the F-ratio,
-$F = \frac{SSR/k}{SSE/(n-k-1)}$, where
-$H_0: \beta_1 = \dots = \beta_4 = 0$ and $H_a$: at least one
-$\beta_i \neq 0$. For each predictor, we test $H_0: \beta_i = 0$ against
-$H_a: \beta_i \neq 0$ using a t-test.
-
-### Additional Analyses
-
-Stepwise regression adds or removes predictors one at a time, keeping
-changes that lower the Akaike Information Criterion (AIC =
-$2p - 2\ln(\hat{L})$, where $p$ is the number of parameters and
-$\hat{L}$ is the maximized likelihood). Its limitations are that it is
-greedy and may miss the best model, it can overfit, its p-values are
-overly optimistic, and it ignores theory.
-
-K-fold cross-validation (k = 5) tests how well a model predicts data it
-was not fit to. The data are split into five folds. Each fold is held
-out in turn while the model is fit to the other four, and the model then
-predicts the held-out fold. Models are compared using the root mean
-square error, $RMSE = \sqrt{\frac{1}{n}\sum (y_i - \hat{y}_i)^2}$, where
-$\hat{y}_i$ is the cross-validated prediction. A smaller RMSE means
-better prediction.
-
-### Software
-
-All analyses were performed in R.
-
-## Results
+## Regression Results
 
 ```{r}
 #| label: Using Stepwise regression to determine the best model based on the Akaike Information Criterion
@@ -327,8 +323,6 @@ summary(model_full)
 
 anova(model_full)
 ```
-
-### Regression Results
 
 All four predictors are statistically significant (p \< 0.0001). Because
 the dependent variable is logged, coefficients are approximate
@@ -401,9 +395,7 @@ residuals (in the next section) shows whether the residuals are also
 spatially clustered. We will test spatial autocorrelation formally in
 the next assignment.
 
-### Additional Models
-
-#### Stepwise Regression
+### Stepwise Regression Results
 
 ```{r}
 #| echo: false
@@ -421,7 +413,7 @@ Stepwise regression starting from the full model (AIC = -3448.1) did not
 drop any predictor, because removing any of them would raise the AIC.
 All four predictors are therefore kept in the final model.
 
-# K-fold Cross Validation
+### K-fold Cross Validation
 
 
 ```{r}
@@ -469,7 +461,7 @@ with 0.4435 for the model with only PCTVACANT and MEDHHINC. The
 four-predictor model has the lower RMSE, so it predicts held-out median
 house values better. The RMSE is in log-dollar units.
 
-# Standardized Regression Residuals
+### Standardized Regression Residuals
 
 ```{r}
 #| label: Histogram and Chloropleth map of standardized regression residuals
@@ -511,9 +503,7 @@ The histogram of standardized residuals is roughly symmetric and centered at zer
 
 The map of standardized residuals shows that prediction errors are not randomly spread across the city. Block groups with large positive residuals, where the model underpredicts log median house value, are concentrated in the northwest and in parts of North Philadelphia. Block groups with negative residuals, where the model overpredicts, appear in parts of southwest and South Philadelphia. Neighboring block groups tend to have residuals of similar sign and size. Like the variable maps, this suggests spatial autocorrelation and that the observations are not independent. 
 
-\`\`\`
-
-# Discussions and Limitations
+# Discussion
 
 In this report, our team used OLS regression to examine how median house value in 1,720 Philadelphia block groups relates to vacancy, single-family housing, educational attainment and poverty. All four predictors were statistically significant. Vacancy and poverty were associated with lower house values, and educational attainment and single-family housing with higher ones. Of note was how unevenly the predictors contributed. The percentage of residents with a bachelor’s degree was by far the strongest predictor, while the percentage of single-family homes, though significant, added the least. The weaker role of PCTSINGLES may reflect how few detached single-family homes there are in a city made up mostly of rowhouses.
 
